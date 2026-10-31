@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="km">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ការរៀបចំ Facebook Posts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Khmer:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #14284b; --navy-soft: #e8edf6; --red: #c8102e; --red-soft: #fdecee;
+      --bg: #ffffff; --surface: #f6f8fb; --text: #1b2333; --muted: #5b6577;
+      --border: #dde3ec; --code-bg: #0f1e3a; --code-text: #e6ecf7; --ok: #1d7a46; --ok-soft: #e7f5ed;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --navy: #9db6e8; --navy-soft: #1a2741; --red: #ff6b7f; --red-soft: #3a1820;
+        --bg: #0d1424; --surface: #131c30; --text: #e5eaf3; --muted: #9aa5b8;
+        --border: #26324b; --code-bg: #070d1a; --code-text: #e6ecf7; --ok: #6fd39b; --ok-soft: #12291d;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.95 "Noto Serif Khmer", "Khmer OS", serif; }
+    header { background: #14284b; color: #fff; padding: 40px 16px 32px; border-bottom: 4px solid #c8102e; }
+    header .wrap { max-width: 860px; margin: 0 auto; }
+    header h1 { margin: 0 0 8px; font-size: 28px; line-height: 1.6; font-weight: 700; }
+    header p { margin: 0; color: #c9d4ea; }
+    .lang { display: inline-block; margin-top: 12px; color: #fff; font-size: 14px; border: 1px solid #c9d4ea; border-radius: 20px; padding: 2px 12px; text-decoration: none; }
+    .layout { max-width: 860px; margin: 0 auto; padding: 24px 16px 64px; }
+    nav.toc { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 32px; }
+    nav.toc strong { color: var(--navy); }
+    nav.toc ol { margin: 8px 0 0; padding-left: 22px; columns: 2; column-gap: 32px; }
+    nav.toc a { color: var(--text); text-decoration: none; }
+    nav.toc a:hover { color: var(--red); }
+    @media (max-width: 640px) { nav.toc ol { columns: 1; } header h1 { font-size: 22px; } }
+    section { margin-bottom: 40px; scroll-margin-top: 16px; }
+    h2 { color: var(--navy); font-size: 21px; line-height: 1.7; margin: 0 0 12px; display: flex; align-items: center; gap: 12px; font-weight: 700; }
+    h2 .num { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--red); color: #fff; display: grid; place-items: center; font-size: 16px; font-family: system-ui, sans-serif; }
+    h3 { color: var(--navy); font-size: 17px; margin: 20px 0 8px; font-weight: 600; }
+    ol.steps { padding-left: 22px; }
+    ol.steps > li { margin-bottom: 8px; }
+    .ui { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-weight: 600; color: var(--navy); }
+    code { font-family: Consolas, "Cascadia Code", monospace; font-size: 0.88em; background: var(--navy-soft); padding: 1px 6px; border-radius: 4px; }
+    pre { background: var(--code-bg); color: var(--code-text); padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 14px; line-height: 1.5; }
+    pre code { background: none; padding: 0; color: inherit; }
+    .note, .warn, .ok { border-left: 4px solid; border-radius: 6px; padding: 12px 16px; margin: 16px 0; }
+    .note { background: var(--navy-soft); border-color: var(--navy); }
+    .warn { background: var(--red-soft); border-color: var(--red); }
+    .ok { background: var(--ok-soft); border-color: var(--ok); }
+    .note p, .warn p, .ok p { margin: 0; }
+    .flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 16px 0; }
+    .flow span { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 14px; }
+    .flow b { color: var(--red); }
+    table { width: 100%; border-collapse: collapse; font-size: 15px; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { background: var(--surface); color: var(--navy); }
+    .table-wrap { overflow-x: auto; }
+    a { color: var(--red); }
+    footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--border); padding-top: 16px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>ទាញយកប្រកាសទាំងអស់ពី Facebook Page ដោយប្រើ Django</h1>
+      <p>មគ្គុទ្ទេសក៍រៀបចំម្តងមួយជំហានៗ៖ បង្កើត Facebook App, យក Access Token និងដំណើរការគម្រោង Django។</p>
+      <a class="lang" href="facebook-posts-setup.html">English version</a>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="toc">
+      <strong>មាតិកា</strong>
+      <ol>
+        <li><a href="#overview">របៀបដែលប្រព័ន្ធដំណើរការ</a></li>
+        <li><a href="#app">បង្កើត Facebook App</a></li>
+        <li><a href="#permissions">បន្ថែមសិទ្ធិ Page</a></li>
+        <li><a href="#user-token">យក User Token</a></li>
+        <li><a href="#page-id">ស្វែងរក Page ID</a></li>
+        <li><a href="#long-token">ពន្យារអាយុ Token</a></li>
+        <li><a href="#page-token">យក Page Token អចិន្ត្រៃយ៍</a></li>
+        <li><a href="#env">ដាក់តម្លៃក្នុង .env</a></li>
+        <li><a href="#run">ដំណើរការគម្រោង Django</a></li>
+        <li><a href="#use">ប្រើ UI និង API</a></li>
+        <li><a href="#troubleshoot">ដោះស្រាយបញ្ហា</a></li>
+        <li><a href="#security">សុវត្ថិភាព</a></li>
+      </ol>
+    </nav>
+
+    <section id="overview">
+      <h2><span class="num">1</span>របៀបដែលប្រព័ន្ធដំណើរការ</h2>
+      <p>គម្រោង Django ហៅទៅ Facebook Graph API ដោយប្រើ <strong>Page Access Token</strong> ហើយទាញយកប្រកាសម្តងមួយទំព័រៗ រហូតដល់បានប្រកាសទាំងអស់ បន្ទាប់មកបង្ហាញលើគេហទំព័រ និងជា JSON។</p>
+      <div class="flow">
+        <span>Facebook App</span><b>→</b>
+        <span>សិទ្ធិ Page</span><b>→</b>
+        <span>User Token</span><b>→</b>
+        <span>Token អាយុវែង</span><b>→</b>
+        <span>Page Token (មិនផុតកំណត់)</span><b>→</b>
+        <span>.env</span><b>→</b>
+        <span>Django UI / API</span>
+      </div>
+      <h3>អ្វីដែលអ្នកត្រូវការ</h3>
+      <ul>
+        <li>គណនី Facebook ដែលមានសិទ្ធិ <strong>Facebook access with full control</strong> លើ Page។</li>
+        <li>Python 3.12 ឬថ្មីជាងនេះ នៅលើកុំព្យូទ័ររបស់អ្នក។</li>
+        <li>ថតគម្រោង៖ <code>D:\s.chhunyeang\Personal\Webs\fb-posts</code></li>
+      </ul>
+    </section>
+
+    <section id="app">
+      <h2><span class="num">2</span>បង្កើត Facebook App</h2>
+      <ol class="steps">
+        <li>ចូលទៅ <a href="https://developers.facebook.com/apps/" target="_blank" rel="noopener">developers.facebook.com/apps</a> ហើយ Log in។</li>
+        <li>ចុច <span class="ui">Create App</span> វាយឈ្មោះ App រួចចុច <span class="ui">Next</span>។</li>
+        <li>នៅក្នុងបញ្ជី Use case (<span class="ui">All</span>) ធីក<strong>តែមួយគត់</strong> <span class="ui">Manage everything on your Page</span> រួចចុច <span class="ui">Next</span>។</li>
+        <li>ផ្នែក Business portfolio៖ ជ្រើស <span class="ui">I don't want to connect a business portfolio yet</span> → <span class="ui">Next</span>។</li>
+        <li>ចុច <span class="ui">Next</span> រហូតដល់ចប់ → <span class="ui">Create app</span> (បញ្ចូលពាក្យសម្ងាត់ ប្រសិនបើវាសួរ)។</li>
+      </ol>
+      <div class="warn"><p><strong>សំខាន់៖</strong> Use case ត្រូវតែជា <em>Manage everything on your Page</em>។ App ដែលគ្មាន Use case សម្រាប់ Page មិនអាចយកសិទ្ធិ Page បានទេ — Token នឹងមានតែ <code>public_profile</code> ប៉ុណ្ណោះ។</p></div>
+    </section>
+
+    <section id="permissions">
+      <h2><span class="num">3</span>បន្ថែមសិទ្ធិ Page ទៅក្នុង App</h2>
+      <ol class="steps">
+        <li>បើក App របស់អ្នកពី <a href="https://developers.facebook.com/apps/" target="_blank" rel="noopener">developers.facebook.com/apps</a>។</li>
+        <li>នៅម៉ឺនុយខាងឆ្វេង ចុច <span class="ui">Use cases</span>។</li>
+        <li>នៅលើកាត <span class="ui">Manage everything on your Page</span> ចុច <span class="ui">Customize</span> (ឬប៊ូតុង ✏️ / <span class="ui">Edit</span>)។</li>
+        <li>នៅក្នុងបញ្ជីសិទ្ធិ ចុច <span class="ui">Add</span> នៅជាប់នឹង៖
+          <ul>
+            <li><code>pages_show_list</code></li>
+            <li><code>pages_read_engagement</code></li>
+            <li><code>pages_read_user_content</code></li>
+          </ul>
+        </li>
+        <li>សិទ្ធិនីមួយៗគួរបង្ហាញ <span class="ui">Ready for testing</span>។ ចុច <span class="ui">Save</span> ប្រសិនបើមាន។</li>
+      </ol>
+      <div class="note"><p>គន្លឹះ៖ ចុច <strong>Ctrl + F</strong> ដើម្បីស្វែងរកសិទ្ធិក្នុងបញ្ជីវែង។ <strong>មិនចាំបាច់</strong> App Review ទេ ព្រោះអ្នកជា Admin របស់ App និង Page។</p></div>
+    </section>
+
+    <section id="user-token">
+      <h2><span class="num">4</span>យក User Token (Graph API Explorer)</h2>
+      <ol class="steps">
+        <li>បើក <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener">Graph API Explorer</a> ហើយ Refresh ទំព័រ (F5)។</li>
+        <li>នៅខាងស្តាំ ត្រង់ <span class="ui">Meta App</span>៖ ជ្រើសរើស App របស់អ្នក។</li>
+        <li>ត្រង់ <span class="ui">User or Page</span>៖ ជ្រើស <span class="ui">Get User Access Token</span>។</li>
+        <li>ចុច <span class="ui">Add a Permission</span>៖ បន្ថែមសិទ្ធិ <code>pages_...</code> ទាំង ៣ ដដែល។ លុបសិទ្ធិ <code>user_...</code> ចេញ។</li>
+        <li>ចុច <span class="ui">Generate Access Token</span>។</li>
+        <li>នៅក្នុងផ្ទាំង Popup ចុច <span class="ui">Edit previous settings</span> (ប្រសិនបើមាន) <strong>ធីក Page របស់អ្នក</strong> រួចចុច <span class="ui">Continue</span> → <span class="ui">Save</span>។</li>
+        <li>ចម្លង Token ពីប្រអប់ <span class="ui">Access Token</span> (ចាប់ផ្តើមដោយ <code>EAA…</code>)។</li>
+      </ol>
+      <div class="note"><p>Token នេះផុតកំណត់ក្នុងរយៈពេលប្រហែល <strong>១ ម៉ោង</strong>។ ជំហានបន្ទាប់នឹងប្តូរវាទៅជា Page Token ដែលមិនផុតកំណត់។</p></div>
+    </section>
+
+    <section id="page-id">
+      <h2><span class="num">5</span>ស្វែងរក Page ID</h2>
+      <p><strong>វិធី ក — នៅលើ Facebook៖</strong> បើក Page របស់អ្នក → <span class="ui">About</span> → <span class="ui">Page transparency</span> → <span class="ui">Page ID</span>។</p>
+      <p><strong>វិធី ខ — នៅក្នុង Graph API Explorer៖</strong> វាយឈ្មោះ Username របស់ Page រួចចុច <span class="ui">Submit</span>៖</p>
+      <pre><code>cdlsolutionskh?fields=id,name</code></pre>
+      <p>លទ្ធផល៖</p>
+      <pre><code>{ "id": "100604454959362", "name": "CDL Solutions" }</code></pre>
+    </section>
+
+    <section id="long-token">
+      <h2><span class="num">6</span>ពន្យារអាយុ Token</h2>
+      <ol class="steps">
+        <li>បើក <a href="https://developers.facebook.com/tools/debug/accesstoken/" target="_blank" rel="noopener">Access Token Debugger</a>។</li>
+        <li>បិទភ្ជាប់ User Token ពីជំហានទី ៤ ហើយចុច <span class="ui">Debug</span>។</li>
+        <li>ពិនិត្យ៖ <span class="ui">Type: User</span>, <span class="ui">Valid: True</span> និងមានសិទ្ធិ <code>pages_...</code> ទាំង ៣។</li>
+        <li>រំកិលចុះក្រោមបំផុត ហើយចុច <span class="ui">Extend Access Token</span>។</li>
+        <li>ចម្លង <strong>អត្ថបទ Token ថ្មី</strong> ដែលបង្ហាញនៅក្រោមប៊ូតុង (ចាប់ផ្តើមដោយ <code>EAA…</code>)។ ពេល Debug វា គួរបង្ហាញ <span class="ui">Expires: in about 2 months</span>។</li>
+      </ol>
+      <div class="warn"><p>ត្រូវចម្លង <strong>អត្ថបទ Token</strong> មិនមែនតារាងព័ត៌មាន (Issued / Expires / Scopes) ទេ។ តារាងព័ត៌មានមិនមែនជា Token ទេ។</p></div>
+    </section>
+
+    <section id="page-token">
+      <h2><span class="num">7</span>យក Page Token អចិន្ត្រៃយ៍</h2>
+      <ol class="steps">
+        <li>ត្រឡប់ទៅ <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener">Graph API Explorer</a> វិញ។</li>
+        <li>បិទភ្ជាប់ Token <strong>អាយុវែង</strong> ពីជំហានទី ៦ ចូលក្នុងប្រអប់ <span class="ui">Access Token</span>។</li>
+        <li>វាយសំណើនេះ (ប្រើ Page ID របស់អ្នក) ហើយចុច <span class="ui">Submit</span>៖
+          <pre><code>100604454959362?fields=name,access_token</code></pre>
+        </li>
+        <li>ចម្លងតម្លៃ <code>access_token</code> ពីលទ្ធផល — នេះគឺជា <strong>Page Token</strong>។</li>
+        <li>ពិនិត្យវានៅក្នុង <a href="https://developers.facebook.com/tools/debug/accesstoken/" target="_blank" rel="noopener">Access Token Debugger</a>៖ <span class="ui">Type: Page</span>, <span class="ui">Expires: Never</span>។</li>
+      </ol>
+      <div class="ok"><p>Page Token ដែលបង្កើតចេញពី User Token អាយុវែង <strong>មិនផុតកំណត់ទេ</strong>។ មានតែ <em>Data Access</em> ប៉ុណ្ណោះដែលត្រូវបន្តរៀងរាល់ ៩០ ថ្ងៃម្តង — ការប្រើប្រាស់ធម្មតានឹងបន្តវាដោយស្វ័យប្រវត្តិ។</p></div>
+    </section>
+
+    <section id="env">
+      <h2><span class="num">8</span>ដាក់តម្លៃក្នុង <code>.env</code></h2>
+      <p>បើកឯកសារ <code>D:\s.chhunyeang\Personal\Webs\fb-posts\.env</code> ហើយកំណត់៖</p>
+      <pre><code>FACEBOOK_PAGE_ID=100604454959362
+FACEBOOK_PAGE_ACCESS_TOKEN=EAA...Page Token របស់អ្នក...
+FACEBOOK_GRAPH_VERSION=v26.0</code></pre>
+      <ul>
+        <li>Token ត្រូវនៅលើ <strong>បន្ទាត់តែមួយ</strong> គ្មានសញ្ញា " " និងគ្មានដកឃ្លា។</li>
+        <li><code>.env</code> ស្ថិតនៅក្នុង <code>.gitignore</code> — កុំ Commit វាឡើង GitHub ដាច់ខាត។</li>
+        <li>ត្រូវ Restart Server រាល់ពេលកែប្រែ <code>.env</code>។</li>
+      </ul>
+    </section>
+
+    <section id="run">
+      <h2><span class="num">9</span>ដំណើរការគម្រោង Django</h2>
+      <h3>លើកដំបូងតែម្តង</h3>
+      <pre><code>cd D:\s.chhunyeang\Personal\Webs\fb-posts
+python -m venv .venv
+.venv\Scripts\pip install -r requirements.txt
+.venv\Scripts\python manage.py migrate</code></pre>
+      <h3>រាល់ពេលប្រើ</h3>
+      <pre><code>cd D:\s.chhunyeang\Personal\Webs\fb-posts
+.venv\Scripts\python manage.py runserver</code></pre>
+      <p>ទុក Terminal នេះឱ្យបើកជានិច្ច។ ចុច <strong>Ctrl + C</strong> ដើម្បីបញ្ឈប់ Server។</p>
+      <div class="note"><p><strong>"127.0.0.1 refused to connect"</strong> មានន័យថា Server មិនទាន់ដំណើរការ — សូមចាប់ផ្តើមវាដោយប្រើពាក្យបញ្ជាខាងលើ។</p></div>
+    </section>
+
+    <section id="use">
+      <h2><span class="num">10</span>ប្រើ UI និង API</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>អាសយដ្ឋាន</th><th>អ្វីដែលបង្ហាញ</th></tr>
+          <tr><td><a href="http://127.0.0.1:8000/" target="_blank" rel="noopener">http://127.0.0.1:8000/</a></td><td>គេហទំព័រ៖ កាតប្រកាសមានរូបភាព កាលបរិច្ឆេទ អត្ថបទ ប្រអប់ស្វែងរក ប៊ូតុង Reload និងតំណទៅ Facebook។</td></tr>
+          <tr><td><code>/api/posts/</code></td><td>ប្រកាសទាំងអស់ជា JSON។</td></tr>
+          <tr><td><code>/api/posts/?limit=20</code></td><td>តែប្រកាសថ្មីបំផុត ២០។</td></tr>
+        </table>
+      </div>
+      <h3>ឧទាហរណ៍ JSON</h3>
+      <pre><code>{
+  "count": 74,
+  "posts": [
+    {
+      "id": "100604454959362_...",
+      "message": "...",
+      "created_time": "2026-10-31T03:44:52+0000",
+      "permalink_url": "https://www.facebook.com/...",
+      "full_picture": "https://...",
+      "status_type": "added_photos"
+    }
+  ]
+}</code></pre>
+      <h3>ឯកសារក្នុងគម្រោង</h3>
+      <div class="table-wrap">
+        <table>
+          <tr><th>ឯកសារ</th><th>តួនាទី</th></tr>
+          <tr><td><code>posts/facebook.py</code></td><td>ហៅ Graph API ហើយទាញម្តងមួយទំព័រៗ រហូតបានប្រកាសទាំងអស់។</td></tr>
+          <tr><td><code>posts/views.py</code></td><td>View សម្រាប់គេហទំព័រ និង JSON API។</td></tr>
+          <tr><td><code>posts/urls.py</code></td><td>កំណត់ផ្លូវ <code>/</code> និង <code>/api/posts/</code>។</td></tr>
+          <tr><td><code>posts/templates/posts/index.html</code></td><td>UI (កាត ស្វែងរក Reload)។</td></tr>
+          <tr><td><code>config/settings.py</code></td><td>អានតម្លៃពី <code>.env</code>។</td></tr>
+          <tr><td><code>.env</code> / <code>.env.example</code></td><td>Page ID, Token, កំណែ API (ពិត / គំរូ)។</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="troubleshoot">
+      <h2><span class="num">11</span>ដោះស្រាយបញ្ហា</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>បញ្ហា</th><th>មូលហេតុ</th><th>ដំណោះស្រាយ</th></tr>
+          <tr><td>127.0.0.1 refused to connect</td><td>Server មិនទាន់ដំណើរការ</td><td>ដំណើរការ <code>manage.py runserver</code> (ជំហានទី ៩)។</td></tr>
+          <tr><td>Invalid OAuth access token – Cannot parse access token</td><td><code>.env</code> នៅមានតម្លៃគំរូ ឬចម្លង Token ខុស</td><td>ដាក់ Page ID និង Token ពិតក្នុង <code>.env</code> រួច Restart Server។</td></tr>
+          <tr><td>Token មានតែ <code>public_profile</code> / <code>user_...</code></td><td>App គ្មាន Use case សម្រាប់ Page</td><td>បង្កើត App ជាមួយ <em>Manage everything on your Page</em> (ជំហានទី ២)។</td></tr>
+          <tr><td>រក <code>pages_read_engagement</code> មិនឃើញក្នុង Explorer</td><td>មិនទាន់បន្ថែមសិទ្ធិទៅក្នុង App</td><td>Use cases → Customize → Add (ជំហានទី ៣) រួច Refresh Explorer។</td></tr>
+          <tr><td><code>me/accounts</code> ឆ្លើយ <code>{"data": []}</code></td><td>មិនបានធីក Page ក្នុង Popup ឬ Facebook មិនបង្ហាញវា</td><td>ធីក Page ក្នុង Popup ឬស្នើទៅ Page ផ្ទាល់៖ <code>PAGE_ID?fields=access_token</code> (ជំហានទី ៧)។</td></tr>
+          <tr><td>Session has expired</td><td>ប្រើ Token អាយុ ១ ម៉ោង</td><td>ធ្វើជំហានទី ៦–៧ ដើម្បីយក Page Token ដែលមិនផុតកំណត់។</td></tr>
+          <tr><td>Data access expired</td><td>លើស ៩០ ថ្ងៃមិនបានបន្ត</td><td>ធ្វើជំហានទី ៤–៨ ម្តងទៀត។</td></tr>
+          <tr><td>មិនឃើញ Page ក្នុង Popup</td><td>គណនីរបស់អ្នកគ្មានសិទ្ធិពេញលេញ</td><td>Page → Settings → Page access → ផ្តល់ <em>Facebook access with full control</em> ដល់គណនីរបស់អ្នក។</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="security">
+      <h2><span class="num">12</span>សុវត្ថិភាព</h2>
+      <ul>
+        <li>Page Token និង App Secret គឺដូចពាក្យសម្ងាត់ — កុំចែករំលែកក្នុង Chat, Email ឬរូបថតអេក្រង់ ហើយកុំ Commit <code>.env</code>។</li>
+        <li>ប្រសិនបើ Secret ត្រូវបានចែករំលែករួចហើយ សូម Reset វា៖ App → <span class="ui">App settings</span> → <span class="ui">Basic</span> → <span class="ui">App secret</span> → <span class="ui">Reset</span>។</li>
+        <li>UI និង API មិនទាន់មានការ Log in ទេ។ សូមបន្ថែមការផ្ទៀងផ្ទាត់អត្តសញ្ញាណ មុនពេលដាក់គេហទំព័រឱ្យដំណើរការលើអ៊ីនធឺណិត។</li>
+        <li>មុនពេល Deploy៖ កំណត់ <code>DEBUG = False</code>, កំណត់ <code>ALLOWED_HOSTS</code> និងប្រើ <code>SECRET_KEY</code> ថ្មី។</li>
+      </ul>
+    </section>
+
+    <footer>CDL Solutions · Facebook Page Posts (Django) · Graph API v26.0 · ធ្វើបច្ចុប្បន្នភាព ៣១ តុលា ២០២៦</footer>
+  </div>
+</body>
+</html>

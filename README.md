@@ -19,3 +19,5 @@ copy .env.example .env      # then fill in your Page ID and Page token
 
 Step-by-step guide for creating the Facebook app and getting a Page token that never expires:
 [docs/facebook-posts-setup.html](docs/facebook-posts-setup.html)
+
+Khmer version (ភាសាខ្មែរ): [docs/facebook-posts-setup-km.html](docs/facebook-posts-setup-km.html)
