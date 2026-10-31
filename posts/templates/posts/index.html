@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page Posts</title>
+  <style>
+    :root {
+      --bg: #f0f2f5; --card: #fff; --text: #1c1e21; --muted: #65676b;
+      --border: #dddfe2; --accent: #1877f2; --error-bg: #fdecea; --error: #b3261e;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #18191a; --card: #242526; --text: #e4e6eb; --muted: #b0b3b8;
+        --border: #3a3b3c; --accent: #2d88ff; --error-bg: #3b1d1b; --error: #f2b8b5;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
+    header { position: sticky; top: 0; z-index: 1; background: var(--card); border-bottom: 1px solid var(--border); }
+    .bar { max-width: 1100px; margin: 0 auto; padding: 12px 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    h1 { font-size: 20px; margin: 0; flex: 1; }
+    #count { color: var(--muted); font-size: 14px; font-weight: 400; }
+    input[type=search] { padding: 8px 12px; border: 1px solid var(--border); border-radius: 20px; background: var(--bg); color: var(--text); min-width: 220px; }
+    #reload { padding: 8px 14px; border: 0; border-radius: 6px; background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; }
+    #reload:disabled { opacity: .6; cursor: default; }
+    main { max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+    .post { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
+    .post img { width: 100%; aspect-ratio: 16/10; object-fit: cover; display: block; background: var(--border); }
+    .body { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .meta { color: var(--muted); font-size: 13px; display: flex; justify-content: space-between; gap: 8px; }
+    .message { white-space: pre-wrap; word-break: break-word; line-height: 1.4; margin: 0; flex: 1; }
+    .message.clamp { display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
+    .empty-msg { color: var(--muted); font-style: italic; }
+    .actions { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+    .actions a, .more { color: var(--accent); text-decoration: none; background: none; border: 0; padding: 0; font: inherit; font-weight: 600; cursor: pointer; }
+    .state { text-align: center; color: var(--muted); padding: 48px 16px; }
+    .error { background: var(--error-bg); color: var(--error); border-radius: 8px; padding: 14px 16px; }
+    @media (max-width: 600px) { input[type=search] { flex: 1; min-width: 0; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <h1>Page Posts <span id="count"></span></h1>
+      <input type="search" id="search" placeholder="Search posts…" aria-label="Search posts">
+      <button id="reload" type="button">Reload</button>
+    </div>
+  </header>
+  <main>
+    <div id="status" class="state">Loading posts…</div>
+    <div id="grid" class="grid"></div>
+  </main>
+
+  <script>
+    const apiUrl = "{% url 'page-posts' %}";
+    const grid = document.getElementById('grid');
+    const statusEl = document.getElementById('status');
+    const countEl = document.getElementById('count');
+    const search = document.getElementById('search');
+    const reloadBtn = document.getElementById('reload');
+    let posts = [];
+
+    function el(tag, attrs = {}, text) {
+      const node = document.createElement(tag);
+      Object.assign(node, attrs);
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    function formatDate(value) {
+      return new Date(value).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+    }
+
+    function renderPost(post) {
+      const card = el('article', { className: 'post' });
+      if (post.full_picture) {
+        card.append(el('img', { src: post.full_picture, alt: '', loading: 'lazy' }));
+      }
+
+      const body = el('div', { className: 'body' });
+      const meta = el('div', { className: 'meta' });
+      meta.append(el('span', {}, formatDate(post.created_time)));
+      if (post.status_type) meta.append(el('span', {}, post.status_type.replace(/_/g, ' ')));
+      body.append(meta);
+
+      const msg = post.message
+        ? el('p', { className: 'message clamp' }, post.message)
+        : el('p', { className: 'message empty-msg' }, 'No text');
+      body.append(msg);
+
+      const actions = el('div', { className: 'actions' });
+      if (post.message && post.message.length > 280) {
+        const more = el('button', { className: 'more', type: 'button' }, 'See more');
+        more.onclick = () => {
+          const clamped = msg.classList.toggle('clamp');
+          more.textContent = clamped ? 'See more' : 'See less';
+        };
+        actions.append(more);
+      } else {
+        actions.append(el('span'));
+      }
+      if (post.permalink_url) {
+        actions.append(el('a', { href: post.permalink_url, target: '_blank', rel: 'noopener' }, 'View on Facebook ↗'));
+      }
+      body.append(actions);
+
+      card.append(body);
+      return card;
+    }
+
+    function render() {
+      const q = search.value.trim().toLowerCase();
+      const shown = q ? posts.filter(p => (p.message || '').toLowerCase().includes(q)) : posts;
+      grid.replaceChildren(...shown.map(renderPost));
+      countEl.textContent = q ? `(${shown.length} of ${posts.length})` : `(${posts.length})`;
+      statusEl.className = 'state';
+      statusEl.hidden = shown.length > 0;
+      statusEl.textContent = posts.length ? 'No posts match your search.' : 'This page has no posts yet.';
+    }
+
+    async function load() {
+      reloadBtn.disabled = true;
+      grid.replaceChildren();
+      countEl.textContent = '';
+      statusEl.hidden = false;
+      statusEl.className = 'state';
+      statusEl.textContent = 'Loading posts…';
+      try {
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+        posts = data.posts;
+        render();
+      } catch (err) {
+        statusEl.className = 'error';
+        statusEl.textContent = `Could not load posts: ${err.message}`;
+      } finally {
+        reloadBtn.disabled = false;
+      }
+    }
+
+    search.addEventListener('input', render);
+    reloadBtn.addEventListener('click', load);
+    load();
+  </script>
+</body>
+</html>

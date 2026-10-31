@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Facebook Posts Setup</title>
+  <style>
+    :root {
+      --navy: #14284b; --navy-soft: #e8edf6; --red: #c8102e; --red-soft: #fdecee;
+      --bg: #ffffff; --surface: #f6f8fb; --text: #1b2333; --muted: #5b6577;
+      --border: #dde3ec; --code-bg: #0f1e3a; --code-text: #e6ecf7; --ok: #1d7a46; --ok-soft: #e7f5ed;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --navy: #9db6e8; --navy-soft: #1a2741; --red: #ff6b7f; --red-soft: #3a1820;
+        --bg: #0d1424; --surface: #131c30; --text: #e5eaf3; --muted: #9aa5b8;
+        --border: #26324b; --code-bg: #070d1a; --code-text: #e6ecf7; --ok: #6fd39b; --ok-soft: #12291d;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    header { background: #14284b; color: #fff; padding: 40px 16px 32px; border-bottom: 4px solid #c8102e; }
+    header .wrap { max-width: 860px; margin: 0 auto; }
+    header h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.2; }
+    header p { margin: 0; color: #c9d4ea; }
+    .layout { max-width: 860px; margin: 0 auto; padding: 24px 16px 64px; }
+    nav.toc { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 32px; }
+    nav.toc strong { color: var(--navy); }
+    nav.toc ol { margin: 8px 0 0; padding-left: 22px; columns: 2; column-gap: 32px; }
+    nav.toc a { color: var(--text); text-decoration: none; }
+    nav.toc a:hover { color: var(--red); }
+    @media (max-width: 640px) { nav.toc ol { columns: 1; } header h1 { font-size: 24px; } }
+    section { margin-bottom: 40px; scroll-margin-top: 16px; }
+    h2 { color: var(--navy); font-size: 22px; margin: 0 0 12px; display: flex; align-items: center; gap: 12px; }
+    h2 .num { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--red); color: #fff; display: grid; place-items: center; font-size: 16px; }
+    h3 { color: var(--navy); font-size: 17px; margin: 20px 0 8px; }
+    ol.steps { padding-left: 22px; }
+    ol.steps > li { margin-bottom: 8px; }
+    .ui { font-weight: 600; color: var(--navy); }
+    code { font-family: Consolas, "Cascadia Code", monospace; font-size: 0.92em; background: var(--navy-soft); padding: 1px 6px; border-radius: 4px; }
+    pre { background: var(--code-bg); color: var(--code-text); padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 14px; line-height: 1.5; }
+    pre code { background: none; padding: 0; color: inherit; }
+    .note, .warn, .ok { border-left: 4px solid; border-radius: 6px; padding: 12px 16px; margin: 16px 0; }
+    .note { background: var(--navy-soft); border-color: var(--navy); }
+    .warn { background: var(--red-soft); border-color: var(--red); }
+    .ok { background: var(--ok-soft); border-color: var(--ok); }
+    .note p, .warn p, .ok p { margin: 0; }
+    .flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 16px 0; }
+    .flow span { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 14px; }
+    .flow b { color: var(--red); }
+    table { width: 100%; border-collapse: collapse; font-size: 15px; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { background: var(--surface); color: var(--navy); }
+    .table-wrap { overflow-x: auto; }
+    a { color: var(--red); }
+    footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--border); padding-top: 16px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Get All Facebook Page Posts with Django</h1>
+      <p>Step-by-step setup guide: Facebook app, access token, and the Django project.</p>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="toc">
+      <strong>Contents</strong>
+      <ol>
+        <li><a href="#overview">How it works</a></li>
+        <li><a href="#app">Create the Facebook app</a></li>
+        <li><a href="#permissions">Add Page permissions</a></li>
+        <li><a href="#user-token">Get a user token</a></li>
+        <li><a href="#page-id">Find the Page ID</a></li>
+        <li><a href="#long-token">Make the token long-lived</a></li>
+        <li><a href="#page-token">Get the permanent Page token</a></li>
+        <li><a href="#env">Put values in .env</a></li>
+        <li><a href="#run">Run the Django project</a></li>
+        <li><a href="#use">Use the UI and API</a></li>
+        <li><a href="#troubleshoot">Troubleshooting</a></li>
+        <li><a href="#security">Security notes</a></li>
+      </ol>
+    </nav>
+
+    <section id="overview">
+      <h2><span class="num">1</span>How it works</h2>
+      <p>The Django project calls the Facebook Graph API with a <strong>Page access token</strong>, follows the pagination until every post is loaded, and shows them on a web page and as JSON.</p>
+      <div class="flow">
+        <span>Facebook app</span><b>→</b>
+        <span>Page permissions</span><b>→</b>
+        <span>User token</span><b>→</b>
+        <span>Long-lived token</span><b>→</b>
+        <span>Page token (never expires)</span><b>→</b>
+        <span>.env</span><b>→</b>
+        <span>Django UI / API</span>
+      </div>
+      <h3>You need</h3>
+      <ul>
+        <li>A Facebook account with <strong>Facebook access with full control</strong> of the Page.</li>
+        <li>Python 3.12+ on your computer.</li>
+        <li>The project folder: <code>D:\s.chhunyeang\Personal\Webs\fb-posts</code></li>
+      </ul>
+    </section>
+
+    <section id="app">
+      <h2><span class="num">2</span>Create the Facebook app</h2>
+      <ol class="steps">
+        <li>Go to <a href="https://developers.facebook.com/apps/" target="_blank" rel="noopener">developers.facebook.com/apps</a> and log in.</li>
+        <li>Click <span class="ui">Create App</span>, type an app name, click <span class="ui">Next</span>.</li>
+        <li>On the use case list (<span class="ui">All</span>), tick <strong>only</strong> <span class="ui">Manage everything on your Page</span>, click <span class="ui">Next</span>.</li>
+        <li>Business portfolio: choose <span class="ui">I don't want to connect a business portfolio yet</span> → <span class="ui">Next</span>.</li>
+        <li>Click <span class="ui">Next</span> through the remaining screens → <span class="ui">Create app</span> (enter your password if asked).</li>
+      </ol>
+      <div class="warn"><p><strong>Important:</strong> the use case must be <em>Manage everything on your Page</em>. Apps without a Page use case cannot get Page permissions — tokens will only have <code>public_profile</code>.</p></div>
+    </section>
+
+    <section id="permissions">
+      <h2><span class="num">3</span>Add Page permissions to the app</h2>
+      <ol class="steps">
+        <li>Open your app from <a href="https://developers.facebook.com/apps/" target="_blank" rel="noopener">developers.facebook.com/apps</a>.</li>
+        <li>In the left menu click <span class="ui">Use cases</span>.</li>
+        <li>On the <span class="ui">Manage everything on your Page</span> card click <span class="ui">Customize</span> (or the ✏️ / <span class="ui">Edit</span> button).</li>
+        <li>In the permission list click <span class="ui">Add</span> next to:
+          <ul>
+            <li><code>pages_show_list</code></li>
+            <li><code>pages_read_engagement</code></li>
+            <li><code>pages_read_user_content</code></li>
+          </ul>
+        </li>
+        <li>Each should show <span class="ui">Ready for testing</span>. Click <span class="ui">Save</span> if shown.</li>
+      </ol>
+      <div class="note"><p>Tip: press <strong>Ctrl + F</strong> to find a permission in the long list. App Review is <strong>not</strong> needed — you are the app admin and the Page admin.</p></div>
+    </section>
+
+    <section id="user-token">
+      <h2><span class="num">4</span>Get a user token (Graph API Explorer)</h2>
+      <ol class="steps">
+        <li>Open <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener">Graph API Explorer</a> and refresh the page (F5).</li>
+        <li>On the right, <span class="ui">Meta App</span>: choose your app.</li>
+        <li><span class="ui">User or Page</span>: choose <span class="ui">Get User Access Token</span>.</li>
+        <li><span class="ui">Add a Permission</span>: add the same 3 <code>pages_...</code> permissions. Remove any <code>user_...</code> permissions.</li>
+        <li>Click <span class="ui">Generate Access Token</span>.</li>
+        <li>In the popup click <span class="ui">Edit previous settings</span> (if shown), <strong>tick your Page</strong>, then <span class="ui">Continue</span> → <span class="ui">Save</span>.</li>
+        <li>Copy the token from the <span class="ui">Access Token</span> box (starts with <code>EAA…</code>).</li>
+      </ol>
+      <div class="note"><p>This token expires in about <strong>1 hour</strong>. The next steps turn it into a Page token that never expires.</p></div>
+    </section>
+
+    <section id="page-id">
+      <h2><span class="num">5</span>Find the Page ID</h2>
+      <p><strong>Option A — on Facebook:</strong> open your Page → <span class="ui">About</span> → <span class="ui">Page transparency</span> → <span class="ui">Page ID</span>.</p>
+      <p><strong>Option B — in Graph API Explorer:</strong> type the Page username and click <span class="ui">Submit</span>:</p>
+      <pre><code>cdlsolutionskh?fields=id,name</code></pre>
+      <p>Result:</p>
+      <pre><code>{ "id": "100604454959362", "name": "CDL Solutions" }</code></pre>
+    </section>
+
+    <section id="long-token">
+      <h2><span class="num">6</span>Make the token long-lived</h2>
+      <ol class="steps">
+        <li>Open the <a href="https://developers.facebook.com/tools/debug/accesstoken/" target="_blank" rel="noopener">Access Token Debugger</a>.</li>
+        <li>Paste the user token from step 4 and click <span class="ui">Debug</span>.</li>
+        <li>Check: <span class="ui">Type: User</span>, <span class="ui">Valid: True</span>, and the 3 <code>pages_...</code> scopes.</li>
+        <li>Scroll to the bottom and click <span class="ui">Extend Access Token</span>.</li>
+        <li>Copy the <strong>new token text</strong> shown under the button (starts with <code>EAA…</code>). Debugging it should show <span class="ui">Expires: in about 2 months</span>.</li>
+      </ol>
+      <div class="warn"><p>Copy the <strong>token text</strong>, not the info table (Issued / Expires / Scopes). The info table is not a token.</p></div>
+    </section>
+
+    <section id="page-token">
+      <h2><span class="num">7</span>Get the permanent Page token</h2>
+      <ol class="steps">
+        <li>Go back to <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener">Graph API Explorer</a>.</li>
+        <li>Paste the <strong>long-lived</strong> token from step 6 into the <span class="ui">Access Token</span> box.</li>
+        <li>Type this request (use your Page ID) and click <span class="ui">Submit</span>:
+          <pre><code>100604454959362?fields=name,access_token</code></pre>
+        </li>
+        <li>Copy the <code>access_token</code> value from the result — this is the <strong>Page token</strong>.</li>
+        <li>Check it in the <a href="https://developers.facebook.com/tools/debug/accesstoken/" target="_blank" rel="noopener">Access Token Debugger</a>: <span class="ui">Type: Page</span>, <span class="ui">Expires: Never</span>.</li>
+      </ol>
+      <div class="ok"><p>A Page token created from a long-lived user token <strong>never expires</strong>. Only <em>Data Access</em> must be renewed every 90 days — normal use renews it.</p></div>
+    </section>
+
+    <section id="env">
+      <h2><span class="num">8</span>Put the values in <code>.env</code></h2>
+      <p>Open <code>D:\s.chhunyeang\Personal\Webs\fb-posts\.env</code> and set:</p>
+      <pre><code>FACEBOOK_PAGE_ID=100604454959362
+FACEBOOK_PAGE_ACCESS_TOKEN=EAA...your Page token...
+FACEBOOK_GRAPH_VERSION=v26.0</code></pre>
+      <ul>
+        <li>Token on <strong>one line</strong>, no quotes, no spaces.</li>
+        <li><code>.env</code> is in <code>.gitignore</code> — never commit it.</li>
+        <li>Restart the server after every change to <code>.env</code>.</li>
+      </ul>
+    </section>
+
+    <section id="run">
+      <h2><span class="num">9</span>Run the Django project</h2>
+      <h3>First time only</h3>
+      <pre><code>cd D:\s.chhunyeang\Personal\Webs\fb-posts
+python -m venv .venv
+.venv\Scripts\pip install -r requirements.txt
+.venv\Scripts\python manage.py migrate</code></pre>
+      <h3>Every time</h3>
+      <pre><code>cd D:\s.chhunyeang\Personal\Webs\fb-posts
+.venv\Scripts\python manage.py runserver</code></pre>
+      <p>Keep this terminal open. Press <strong>Ctrl + C</strong> to stop the server.</p>
+      <div class="note"><p><strong>"127.0.0.1 refused to connect"</strong> means the server is not running — start it with the command above.</p></div>
+    </section>
+
+    <section id="use">
+      <h2><span class="num">10</span>Use the UI and API</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Address</th><th>What it shows</th></tr>
+          <tr><td><a href="http://127.0.0.1:8000/" target="_blank" rel="noopener">http://127.0.0.1:8000/</a></td><td>Web page: post cards with picture, date, text, search box, Reload button, link to Facebook.</td></tr>
+          <tr><td><code>/api/posts/</code></td><td>All posts as JSON.</td></tr>
+          <tr><td><code>/api/posts/?limit=20</code></td><td>Only the newest 20 posts.</td></tr>
+        </table>
+      </div>
+      <h3>JSON example</h3>
+      <pre><code>{
+  "count": 74,
+  "posts": [
+    {
+      "id": "100604454959362_...",
+      "message": "...",
+      "created_time": "2026-10-31T03:44:52+0000",
+      "permalink_url": "https://www.facebook.com/...",
+      "full_picture": "https://...",
+      "status_type": "added_photos"
+    }
+  ]
+}</code></pre>
+      <h3>Project files</h3>
+      <div class="table-wrap">
+        <table>
+          <tr><th>File</th><th>Purpose</th></tr>
+          <tr><td><code>posts/facebook.py</code></td><td>Calls the Graph API and follows paging until all posts are loaded.</td></tr>
+          <tr><td><code>posts/views.py</code></td><td>The web page view and the JSON API view.</td></tr>
+          <tr><td><code>posts/urls.py</code></td><td>Routes <code>/</code> and <code>/api/posts/</code>.</td></tr>
+          <tr><td><code>posts/templates/posts/index.html</code></td><td>The UI (cards, search, reload).</td></tr>
+          <tr><td><code>config/settings.py</code></td><td>Loads <code>.env</code> values.</td></tr>
+          <tr><td><code>.env</code> / <code>.env.example</code></td><td>Page ID, token, API version (real / template).</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="troubleshoot">
+      <h2><span class="num">11</span>Troubleshooting</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Problem</th><th>Cause</th><th>Fix</th></tr>
+          <tr><td>127.0.0.1 refused to connect</td><td>Server not running</td><td>Run <code>manage.py runserver</code> (step 9).</td></tr>
+          <tr><td>Invalid OAuth access token – Cannot parse access token</td><td><code>.env</code> still has example values, or token copied wrong</td><td>Put the real Page ID and token in <code>.env</code>, restart the server.</td></tr>
+          <tr><td>Token only has <code>public_profile</code> / <code>user_...</code></td><td>App has no Page use case</td><td>Create the app with <em>Manage everything on your Page</em> (step 2).</td></tr>
+          <tr><td>Can't find <code>pages_read_engagement</code> in Explorer</td><td>Permission not added to the app</td><td>Use cases → Customize → Add (step 3), then refresh Explorer.</td></tr>
+          <tr><td><code>me/accounts</code> returns <code>{"data": []}</code></td><td>Page not ticked in popup, or Facebook doesn't list it</td><td>Tick the Page in the popup, or request the Page directly: <code>PAGE_ID?fields=access_token</code> (step 7).</td></tr>
+          <tr><td>Session has expired</td><td>Used a 1-hour token</td><td>Do steps 6–7 to get a Page token that never expires.</td></tr>
+          <tr><td>Data access expired</td><td>90 days without renewing</td><td>Repeat steps 4–8.</td></tr>
+          <tr><td>Page not in the popup</td><td>Your account lacks full control</td><td>Page → Settings → Page access → give your account <em>Facebook access with full control</em>.</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="security">
+      <h2><span class="num">12</span>Security notes</h2>
+      <ul>
+        <li>The Page token and App secret are passwords — never share them in chat, email or screenshots, and never commit <code>.env</code>.</li>
+        <li>If a secret was shared, reset it: app → <span class="ui">App settings</span> → <span class="ui">Basic</span> → <span class="ui">App secret</span> → <span class="ui">Reset</span>.</li>
+        <li>The UI and API have no login. Add authentication before putting the site online.</li>
+        <li>Before deploying: set <code>DEBUG = False</code>, set <code>ALLOWED_HOSTS</code>, and use a new <code>SECRET_KEY</code>.</li>
+      </ul>
+    </section>
+
+    <footer>CDL Solutions · Facebook Page Posts (Django) · Graph API v26.0 · Updated 31 Oct 2026</footer>
+  </div>
+</body>
+</html>
